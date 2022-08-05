@@ -1,42 +1,62 @@
 package jm.task.core.jdbc.util;
 
 import jm.task.core.jdbc.model.User;
-import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
-import java.sql.*;
+import org.hibernate.cfg.Environment;
+import org.hibernate.service.ServiceRegistry;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.util.Properties;
 
 public class Util {
-    private static final String DB_URL = "jdbc:mysql://localhost:3306/users?serverTimezone=Europe/Minsk&useSSL=false";
-    private static final String USERNAME = "root";
-    private static final String PASSWORD = "Moscow-Minsk86";
+    private static SessionFactory sessionFactory;
+    private static final String Connection_Url = "jdbc:mysql://localhost:3306/test?" +
+            "&serverTimeZone=Europe/Moscow&useSSL=false&allowPublicKeyRetrieval=true";
+    private static final String User = "root";
+    private static final String Password = "admin";
+    public static Connection getConnection() {
 
-    private Connection connection;
-
-
-    private Connection JDBCUtilConnection() {
-        try {
-            connection = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
-        } catch (SQLException utilSqlException) {
-            utilSqlException.printStackTrace();
+        Connection connection = null;
+        try
+        {
+            connection = DriverManager.getConnection( Connection_Url,User,Password);
+            connection.setAutoCommit(false);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return connection;
     }
 
-    public Connection getJDBCUtilConnection() {
-        return JDBCUtilConnection();
+
+    public static SessionFactory getSessionFactory() {
+
+        if (sessionFactory == null) {
+            try {
+                Configuration configuration = new Configuration();
+                Properties settings = new Properties();
+                settings.put(Environment.DRIVER, "com.mysql.cj.jdbc.Driver");
+                settings.put(Environment.URL, Connection_Url);
+                settings.put(Environment.USER, User);
+                settings.put(Environment.PASS, Password);
+                settings.put(Environment.DIALECT, "org.hibernate.dialect.MySQL5Dialect");
+                settings.put(Environment.SHOW_SQL, "true");
+                settings.put(Environment.CURRENT_SESSION_CONTEXT_CLASS, "thread");
+                settings.put(Environment.HBM2DDL_AUTO, "update");
+
+                configuration.setProperties(settings);
+                configuration.addAnnotatedClass(User.class);
+                ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
+                        .applySettings(configuration.getProperties()).build();
+
+                sessionFactory = configuration.buildSessionFactory(serviceRegistry);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return sessionFactory;
     }
 
-    public Session hibernateUtilConnection() {
-        Properties properties = new Properties();
-        properties.setProperty("hibernate.connection.url", "jdbc:mysql://localhost:3306/users?serverTimezone=Europe/Minsk&useSSL=false");
-        properties.setProperty("dialect", "org.hibernate.dialect.MySQLDialect");
-        properties.setProperty("hibernate.connection.username", "root");
-        properties.setProperty("hibernate.connection.password", "Moscow-Minsk86");
-        properties.setProperty("hibernate.connection.driver_class", "com.mysql.cj.jdbc.Driver");
-        properties.setProperty("show_sql", String.valueOf(true));
-        SessionFactory sessionFactory = new Configuration().addProperties(properties).addAnnotatedClass(User.class).buildSessionFactory();
-        return sessionFactory.openSession();
-    }
 }

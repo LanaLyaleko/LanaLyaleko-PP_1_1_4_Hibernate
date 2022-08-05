@@ -1,22 +1,29 @@
 package jm.task.core.jdbc.model;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+
 import javax.persistence.*;
+import java.io.Serializable;
+
 
 @Entity
-@Table(name= "users")
-
+@Getter
+@Setter
+@ToString
+@Table(name="users")
 public class User {
     @Id
-    @GeneratedValue (strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column (name = "name")
+    @Column
     private String name;
 
-    @Column (name = "lastName")
+    @Column
     private String lastName;
 
-    @Column (name = "age")
+    @Column
     private Byte age;
 
     public User() {
@@ -27,6 +34,7 @@ public class User {
         this.name = name;
         this.lastName = lastName;
         this.age = age;
+        this.id = 1L;
     }
 
     public Long getId() {
@@ -59,15 +67,5 @@ public class User {
 
     public void setAge(Byte age) {
         this.age = age;
-    }
-
-    @Override
-    public String toString() {
-        return "User{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", age=" + age +
-                '}';
     }
 }
